@@ -12,11 +12,9 @@ import TeacherId from './pages/idCreation/TeacherId';
 import ManagerList from './pages/idCreation/ManagerList';
 import TeacherList from './pages/idCreation/TeacherList';
 import Advertisement from './pages/Notice/Advertisement';
-
 import Upcoming from './pages/testSchedule/Upcoming';
 import PendingMark from './pages/testSchedule/pendingMark';
 import Completed from './pages/testSchedule/Completed';
-
 import StudentList from './pages/idCreation/StudentList';
 import LectureSchedule from './pages/LectureShcedule';
 import Holiday from './pages/holiday/Holiday';
@@ -25,6 +23,7 @@ import Feesinstallment from './pages/Fees/Feesinstallment';
 import BatchProgress from './pages/progressReport/BatchProgress';
 import StudentReport from './pages/progressReport/StudentReport';
 import MarkMessage from './pages/Message/MarkMessage';
+import MarkEdit from './pages/Message/MarkEdit';
 
 function App() {
 
@@ -55,6 +54,7 @@ function App() {
           <Route path='/batch-progress-report' element={<BatchProgress />} />
           <Route path='/student-progress-report' element={<StudentReport/>}></Route>
           <Route path='/mark-message' element={<MarkMessage />} />
+          <Route path='//mark-edit-message' element={<MarkEdit />} />
         </Routes>
       </div>
     </div>

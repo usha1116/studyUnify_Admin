@@ -1,19 +1,37 @@
-import React, { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { addSubject, updateSubject, deleteSubject } from "../redux/subjectSlice";
-import Button from "../component/Button";
-import Table from "../component/Table";
 
-const Subject = () => {
+import React, { useState,useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { addSchool, updateSchool, deleteSchool } from "../../redux/standardSlice";
+import Button from "../../component/Button";
+import Table from "../../component/Table";
+import { FaTrash,FaEdit } from 'react-icons/fa';
+const Standard = () => {
+  const columns = [ { header: "No.", accessor: (_, index) => index + 1 },
+  { header: "StandardName", accessor: "standardName" },
+  { header: "Actions", accessor: "actions" },
+];
   const dispatch = useDispatch();
+  const schools = useSelector((state) => state.schools.schools);
+
   const [modalOpen, setModalOpen] = useState(false);
-  const [currentData, setCurrentData] = useState({ standard: null, subjectName: "" });
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [currentData, setCurrentData] = useState({ id: null, standardNumber: "" });
   const [error, setError] = useState("");
 
-  const standards = useSelector((state) => state.schools.schools);
-  const subjects = useSelector((state) => state.subjects.subjects);
 
-  const openModal = (data = { standard: null, subjectName: "" }) => {
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && modalOpen) {
+      e.preventDefault(); // prevent default form submission
+      saveData(); // call the same save function
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [modalOpen, currentData]);
+
+  const openModal = (data = { id: null, standardNumber: "" }) => {
     setCurrentData(data);
     setError("");
     setModalOpen(true);
@@ -21,121 +39,131 @@ const Subject = () => {
 
   const closeModal = () => {
     setModalOpen(false);
-    setCurrentData({ standard: null, subjectName: "" });
+    setCurrentData({ id: null, standardNumber: "" });
   };
 
   const saveData = () => {
-    if (!currentData.subjectName.trim()) {
-      setError("Subject Name is required.");
+    if (!/^\d+$/.test(currentData.standardNumber)) {
+      setError("Only numbers are allowed.");
+      return;
+    }
+
+    const existingStandard = schools.find(
+      (school) => school.standardName === currentData.standardNumber
+    );
+
+    if (existingStandard) {
+      setError("Standard already exists.");
       return;
     }
 
     if (currentData.id) {
-      dispatch(updateSubject(currentData));
+      dispatch(updateSchool({ id: currentData.id, newStandard: currentData.standardNumber }));
     } else {
-      dispatch(addSubject({ standard: currentData.standard, subjectName: currentData.subjectName }));
+      dispatch(addSchool(currentData.standardNumber));
     }
+
     closeModal();
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-100 min-h-screen">
-      <h2 className="text-lg font-bold mb-4">Subject Management</h2>
-      {standards.length > 0 ? (
-        standards.map((standard) => {
-          const standardSubjects = subjects.filter(
-            (sub) => sub.standard === standard.standardName
-          );
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+  <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 max-w-4xl mx-auto">
+  <div className="flex flex-row justify-between items-center gap-1 mb-6">
+  <h2 className="text-lg font-bold text-gray-800 truncate max-w-[55%]">
+    Standard List
+  </h2>
+  <Button 
+    onClick={() => openModal()} 
+    color="blue" 
+    className="shrink-0 px-2 py-2 text-sm md:text-base md:px-4 md:py-2 whitespace-nowrap min-w-[110px]"
+  >
+    Add Standard
+  </Button>
+</div>
 
-          return (
-            <div key={standard.standardName} className="mb-6">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
-                <h3 className="text-md font-semibold">
-                  Standard {standard.standardName}
-                </h3>
-                <Button
-                  label="Add Subject"
-                  variant="blue"
+        {schools.length > 0 ? (
+          <Table
+            columns={columns}
+            data={schools.map((school) => ({
+              id: school.id,
+              standardName: `Standard ${school.standardName}`,
+            }))}
+            renderActions={(school) => (
+              <div className="flex justify-center items-center gap-2 sm:gap-3">
+                <button
                   onClick={() =>
-                    openModal({ standard: standard.standardName })
+                    openModal({
+                      id: school.id,
+                      standardNumber: school.standardName.replace("Standard ", ""),
+                    })
                   }
+                 
                 >
-                  Add Subject
-                </Button>
+                 <FaEdit color="blue" size={20} />
+                </button>
+                <button onClick={() => setDeleteConfirm(school.id)} >
+                  <FaTrash  color="red" size={20}/>
+                </button>
               </div>
+            )}
+          />
+        ) : (
+          <p className="text-center text-gray-500 text-sm mt-4">No standards available.</p>
+        )}
+      </div>
 
-              {standardSubjects.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table
-                    data={standardSubjects.map((subject, index) => ({
-                      no: index + 1,
-                      subjectName: subject.subjectName,
-                      actions: (
-                        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
-                          <Button
-                            color="yellow"
-                            onClick={() =>
-                              openModal({
-                                standard: standard.standardName,
-                                ...subject,
-                              })
-                            }
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            color="red"
-                            onClick={() =>
-                              dispatch(deleteSubject({ id: subject.id }))
-                            }
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      ),
-                    }))}
-                    columns={["No.", "Subject Name", "Action"]}
-                    keys={["no", "subjectName", "actions"]}
-                  />
-                </div>
-              ) : (
-                <p className="text-gray-500 italic mt-2 text-center">
-                  No subjects added yet for Standard {standard.standardName}.
-                </p>
-              )}
-            </div>
-          );
-        })
-      ) : (
-        <p>No standards available. Please add a standard first.</p>
-      )}
-
-      {/* Modal Popup */}
+      {/* Add/Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/20 flex justify-center items-center px-4">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] sm:w-2/3 md:w-1/2 lg:w-1/3">
-            <h3 className="text-lg font-semibold mb-4">
-              {currentData.id ? "Edit Subject" : "Add New Subject"}
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 px-4">
+          <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-2xl">
+            <h3 className="text-xl font-semibold mb-4">
+              {currentData.id ? "Edit Standard" : "Add New Standard"}
             </h3>
             <input
               type="text"
-              value={currentData.subjectName}
-              onChange={(e) =>
-                setCurrentData({
-                  ...currentData,
-                  subjectName: e.target.value,
-                })
-              }
-              className="p-2 border rounded-lg w-full mb-2"
-              placeholder="Enter Subject Name"
+              value={currentData.standardNumber}
+              onChange={(e) => setCurrentData({ ...currentData, standardNumber: e.target.value })}
+              placeholder="Enter Standard Number"
+              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
             />
-            {error && <p className="text-red-500">{error}</p>}
-            <div className="flex justify-end space-x-2">
-              <Button label="Cancel" onClick={closeModal} variant="gray">
+            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+            <div className="flex justify-end gap-2">
+              <Button onClick={closeModal} color="gray">
                 Cancel
               </Button>
-              <Button label="Save" onClick={saveData} variant="blue">
+              <Button onClick={saveData} color="blue">
                 Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 px-4">
+          <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-2xl">
+            <h3 className="text-lg font-semibold mb-3">Warning Message</h3>
+            <p className="text-sm mb-4 text-gray-700">
+              Deleting this data may cause issues in the future and cannot be undone. Are you sure you want to proceed?
+              <br />
+              <span className="text-red-600 font-semibold">
+                Standard {schools.find((school) => school.id === deleteConfirm)?.standardName}
+              </span>
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => setDeleteConfirm(null)} color="gray">
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  dispatch(deleteSchool(deleteConfirm));
+                  setDeleteConfirm(null);
+                }}
+                color="red"
+              >
+                Remove
               </Button>
             </div>
           </div>
@@ -145,4 +173,4 @@ const Subject = () => {
   );
 };
 
-export default Subject;
+export default Standard;

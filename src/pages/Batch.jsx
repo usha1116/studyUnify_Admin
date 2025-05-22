@@ -1,286 +1,161 @@
-import React, { useState ,useEffect} from "react";
+import { FaTrash, FaEdit } from "react-icons/fa";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { addBatch, deleteBatch, updateBatch } from "../redux/batchSlice";
-import Table from "../component/Table";
-import Button from "../component/Button";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+import { addBatch, deleteBatch, updateBatch } from "../../redux/batchSlice";
+import Table from "../../component/Table";
+import Button from "../../component/Button";
+import AddEditData from "../../component/AddEditData";
 
-// <<<<<<< usha
-
-// // Batch Form Component
-// const BatchForm = ({ standardId, onClose }) => {
-//   const [name, setName] = useState("");
-//   const [startTime, setStartTime] = useState("00:00");
-//   const [endTime, setEndTime] = useState("00:00");
-//   const dispatch = useDispatch();
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     dispatch(addBatch({ standardId, batch: { name, startTime, endTime } }));
-//     setName("");
-//     setStartTime("00:00");
-//     setEndTime("00:00");
-//     onClose(); // close the modal after adding
-//   };
-
-//   return (
-//     <form onSubmit={handleSubmit} className="space-y-5">
-//       <h2 className="text-xl font-bold text-gray-800">Add Batch</h2>
-//       <input
-//         type="text"
-//         value={name}
-//         onChange={(e) => setName(e.target.value)}
-//         placeholder="Batch Name"
-//         className="w-full border border-gray-300 rounded px-3 py-2"
-//         required
-//       />
-//       <input
-//         type="time"
-//         value={startTime}
-//         onChange={(e) => setStartTime(e.target.value)}
-//         className="w-full border border-gray-300 rounded px-3 py-2"
-//         required
-//       />
-//       <input
-//         type="time"
-//         value={endTime}
-//         onChange={(e) => setEndTime(e.target.value)}
-//         className="w-full border border-gray-300 rounded px-3 py-2"
-//         required
-//       />
-//       <div className="flex justify-end mt-4">
-//         <Button color="green" type="submit">
-//           Submit
-//         </Button>
-//       </div>
-//     </form>
-//   );
-// };
-
-
-// const EditBatchModal = ({ batch, index, onClose, onSave }) => {
-//   const [formData, setFormData] = useState(batch);
-
-//   useEffect(() => {
-//     setFormData(batch);
-//   }, [batch]);
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     onSave(index, formData);
-//     onClose();
-//   };
-
-//   return (
-//     <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
-//       <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md relative">
-//         <button
-//           onClick={onClose}
-//           className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
-//         >
-//           ✕
-//         </button>
-//         <form onSubmit={handleSubmit} className="space-y-5">
-//           <h2 className="text-xl font-semibold">Edit Batch</h2>
-//           <input
-//             type="text"
-//             value={formData.name}
-//             onChange={(e) =>
-//               setFormData({ ...formData, name: e.target.value })
-//             }
-//             className="w-full border px-3 py-2 rounded"
-//             required
-//           />
-//           <input
-//             type="time"
-//             value={formData.startTime}
-//             onChange={(e) =>
-//               setFormData({ ...formData, startTime: e.target.value })
-//             }
-//             className="w-full border px-3 py-2 rounded"
-//             required
-//           />
-//           <input
-//             type="time"
-//             value={formData.endTime}
-//             onChange={(e) =>
-//               setFormData({ ...formData, endTime: e.target.value })
-//             }
-//             className="w-full border px-3 py-2 rounded"
-//             required
-//           />
-//           <div className="flex justify-end mt-4">
-//             <Button color="blue" type="submit">
-//               Save Changes
-//             </Button>
-//           </div>
-//         </form>
-//       </div>
-// =======
-// Modal Wrapper
-const ModalWrapper = ({ children, onClose }) => (
-  <div className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-xs bg-opacity-30">
-    <div className="bg-white p-6 rounded-xl relative max-w-md w-full shadow-lg">
-      <button
-        className="absolute top-2 right-2 text-xl text-gray-500"
-        onClick={onClose}
-        type="button"
-      >
-        ✕
-      </button>
-      {children}
-    </div>
-  </div>
-);
-
-// Validation Schema
-const BatchSchema = Yup.object().shape({
-  name: Yup.string().required("Batch name is required"),
-  startTime: Yup.string().required("Start time is required"),
-  endTime: Yup.string().required("End time is required"),
-});
-
-// Form Component
-const BatchForm = ({ initialValues, onSubmit }) => (
-  <Formik
-    initialValues={initialValues}
-    validationSchema={BatchSchema}
-    onSubmit={onSubmit}
-  >
-    {() => (
-      <Form className="space-y-4">
-        <h2 className="text-xl font-bold text-gray-800">
-          {initialValues.id ? "Edit Batch" : "Add Batch"}
-        </h2>
-
-        <div>
-          <label className="block font-medium text-gray-700 mb-1">Batch Name</label>
-          <Field name="name" type="text" className="w-full border px-3 py-2 rounded" />
-          <ErrorMessage name="name" component="div" className="text-red-500 text-sm" />
-        </div>
-
-        <div>
-          <label className="block font-medium text-gray-700 mb-1">Start Time</label>
-          <Field name="startTime" type="time" className="w-full border px-3 py-2 rounded" />
-          <ErrorMessage name="startTime" component="div" className="text-red-500 text-sm" />
-        </div>
-
-        <div>
-          <label className="block font-medium text-gray-700 mb-1">End Time</label>
-          <Field name="endTime" type="time" className="w-full border px-3 py-2 rounded" />
-          <ErrorMessage name="endTime" component="div" className="text-red-500 text-sm" />
-        </div>
-
-        <div className="flex justify-end pt-2">
-          <Button type="submit" color="blue">
-            {initialValues.id ? "Save Changes" : "Submit"}
-          </Button>
-        </div>
-      </Form>
-    )}
-  </Formik>
-);
-
-// Main Component
 const Batch = () => {
   const schools = useSelector((state) => state.schools.schools);
   const batches = useSelector((state) => state.batches.batches);
+  // console.log(batches);
   const dispatch = useDispatch();
 
-  const [modalData, setModalData] = useState({
-    isOpen: false,
-    type: null,
-    standardId: null,
-    initialValues: {},
-  });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalStandardId, setModalStandardId] = useState(null);
+  const [initialData, setInitialData] = useState({});
+  const [batchToDelete, setBatchToDelete] = useState(null);
 
-  const openAddModal = (standardId) => {
-    setModalData({
-      isOpen: true,
-      type: "add",
-      standardId,
-      initialValues: { name: "", startTime: "", endTime: "" },
-    });
-  };
+  const fields = [
+    { name: "name", placeholder: "Batch Name", type: "text" },
+    { name: "startTime", placeholder: "Start Time", type: "time" },
+    { name: "endTime", placeholder: "End Time", type: "time" },
+  ];
 
-  const openEditModal = (standardId, batch) => {
-    setModalData({
-      isOpen: true,
-      type: "edit",
-      standardId,
-      initialValues: { ...batch },
-    });
+  const openModal = (standardId, batch = null) => {
+    setModalStandardId(standardId);
+    setInitialData(batch || {});
+    setModalOpen(true);
   };
 
   const closeModal = () => {
-    setModalData({ isOpen: false, type: null, standardId: null, initialValues: {} });
+    setModalOpen(false);
+    setInitialData({});
+    setModalStandardId(null);
   };
 
-  const handleFormSubmit = (values) => {
-    const { type, standardId } = modalData;
+  const handleSave = (data) => {
+    // console.log(data)
+    const payload = {
+      ...data,
+      standardId: modalStandardId,
+    };
 
-    if (type === "add") {
-      dispatch(addBatch({ standardId, batch: values }));
+    if (data.id) {
+      dispatch(updateBatch({ id:data.id, name: payload.name, startTime: payload.startTime, endTime: payload.endTime }));
     } else {
-      dispatch(updateBatch({ standardId, batch: values }));
+      dispatch(addBatch({ standardId: payload.standardId, name: payload.name, startTime: payload.startTime, endTime: payload.endTime }));
     }
 
     closeModal();
   };
 
-  return (
-    <>
-      {schools?.map((std) => {
-        const standardId = std.id;
-        const filteredBatches = batches.filter((batch) => batch.standardId === standardId);
+  const handleDelete = () => {
+    console.log(batchToDelete)
+    if (batchToDelete) {
+      dispatch(deleteBatch(batchToDelete.id));
+      setBatchToDelete(null);
+    }
+  };
 
-        return (
-          <div key={standardId} className="max-w-5xl mx-auto px-4 py-6">
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="text-2xl font-bold text-gray-800">
-                Standard: {std.standardName}
-              </h1>
-              <Button type="button" onClick={() => openAddModal(standardId)}>
-                Add Batch
+  return (
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
+      <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 max-w-4xl mx-auto">
+        {" "}
+        <h2 className="text-lg sm:text-xl font-bold text-center sm:text-left mb-6">
+          Batch List
+        </h2>
+        {schools.map((std) => {
+          const standardId = std.id;
+          const filteredBatches = batches.filter(
+            (batch) => batch.standardId === standardId
+          );
+
+          return (
+            <div key={standardId} className="mb-10">
+              <div className="flex justify-between items-center mb-4 gap-2 sm:gap-3">
+                <h2 className="text-lg font-bold text-left">
+                  Standard: {std.standardName}
+                </h2>
+                <Button onClick={() => openModal(standardId)} color="blue">
+                  Add Batch
+                </Button>
+              </div>
+
+              {filteredBatches.length > 0 ? (
+                <Table
+                  columns={[
+                    { header: "No.", accessor: (_, index) => index + 1 },
+                    { header: "Batch Name", accessor: "name" },
+                    { header: "Start Time", accessor: "startTime" },
+                    { header: "End Time", accessor: "endTime" },
+                    { header: "Actions", accessor: "actions" },
+                  ]}
+                  data={filteredBatches.map((batch) => ({
+                    id: batch.id,
+                    name: batch.name,
+                    startTime: batch.startTime,
+                    endTime: batch.endTime,
+                  }))}
+                  renderActions={(batch) => (
+                    <div className="flex gap-2 justify-center">
+                      <button onClick={() => openModal(standardId, batch)}>
+                        <FaEdit color="blue" size={20} />
+                      </button>
+                      <button onClick={() => setBatchToDelete(batch)}>
+                        <FaTrash color="red" size={20} />
+                      </button>
+                    </div>
+                  )}
+                />
+              ) : (
+                <p className="text-gray-500 italic text-center mt-2">
+                  No batches added for this standard yet.
+                </p>
+              )}
+
+              {/* Add/Edit Modal */}
+              {modalOpen && modalStandardId === standardId && (      
+                  <div className="fixed inset-0  backdrop-blur-sm flex justify-center items-center z-50 px-4">
+                <AddEditData
+                  isOpen={modalOpen}
+                  onClose={closeModal}
+                  onSave={handleSave}
+                  initialData={initialData}
+                  fields={fields}
+                /></div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Delete Confirmation Modal - copied style from Standard page */}
+      {batchToDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 px-4">
+          <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-2xl">
+            <h3 className="text-lg font-semibold mb-3">Warning Message</h3>
+            <p className="text-sm mb-4 text-gray-700">
+              Deleting this data may cause issues in the future and cannot be
+              undone. Are you sure you want to proceed?
+              <br />
+              <span className="text-red-600 font-semibold">
+                Batch {batchToDelete?.name}
+              </span>
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => setBatchToDelete(null)} color="gray">
+                Cancel
+              </Button>
+              <Button onClick={handleDelete} color="red">
+                Remove
               </Button>
             </div>
-
-            <Table
-              columns={["Batch Name", "Start Time", "End Time", "Actions"]}
-              data={filteredBatches.map((batch) => ({
-                id: batch.id,
-                values: [batch.name, batch.startTime, batch.endTime],
-              }))}
-              renderActions={(item) => (
-                <div className="flex gap-2 justify-center">
-                  <Button
-                    color="yellow"
-                    type="button"
-                    onClick={() => openEditModal(standardId, item)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    color="red"
-                    type="button"
-                    onClick={() => dispatch(deleteBatch({ batchId: item.id }))}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              )}
-            />
-
-            {modalData.isOpen && modalData.standardId === standardId && (
-              <ModalWrapper onClose={closeModal}>
-                <BatchForm initialValues={modalData.initialValues} onSubmit={handleFormSubmit} />
-              </ModalWrapper>
-            )}
           </div>
-        );
-      })}
-    </>
+        </div>
+      )}
+    </div>
   );
 };
 
